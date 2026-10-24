@@ -44,9 +44,9 @@ public final class MainActivity extends Activity implements RingManager.Listener
     /** True until the person picks a date: the screen then follows the newest day with data. */
     private boolean autoDate = true;
 
-    private static final int[] ICONS = {R.drawable.ic_home, R.drawable.ic_sleep, R.drawable.ic_readiness, R.drawable.ic_activity, R.drawable.ic_heart, R.drawable.ic_screen};
-    private static final String[] LABELS = {"Today", "Sleep", "Ready", "Activity", "Body", "Screen"};
-    private static final int[] COLORS = {Ui.TEXT, Ui.SLEEP, Ui.READY, Ui.ACTIVE, Ui.HEART, Ui.OXY};
+    private static final int[] ICONS = {R.drawable.ic_home, R.drawable.ic_sleep, R.drawable.ic_readiness, R.drawable.ic_activity, R.drawable.ic_heart, R.drawable.ic_screen, R.drawable.ic_combined};
+    private static final String[] LABELS = {"Today", "Sleep", "Ready", "Activity", "Body", "Screen", "All"};
+    private static final int[] COLORS = {Ui.TEXT, Ui.SLEEP, Ui.READY, Ui.ACTIVE, Ui.HEART, Ui.OXY, Ui.TEXT};
 
     @Override
     protected void onCreate(Bundle b) {
@@ -444,6 +444,9 @@ public final class MainActivity extends Activity implements RingManager.Listener
                 break;
             case Pages.SCREEN:
                 content = Pages.screen(this, data, this);
+                break;
+            case Pages.COMBINED:
+                content = Pages.combined(this);
                 break;
             default:
                 content = Pages.today(this, data, this, syncLine());

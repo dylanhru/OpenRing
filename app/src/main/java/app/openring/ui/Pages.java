@@ -42,7 +42,36 @@ public final class Pages {
         void reload();
     }
 
-    public static final int TODAY = 0, SLEEP = 1, READINESS = 2, ACTIVITY = 3, BODY = 4, SCREEN = 5;
+    public static final int TODAY = 0, SLEEP = 1, READINESS = 2, ACTIVITY = 3, BODY = 4, SCREEN = 5, COMBINED = 6;
+
+    // ======================================================================== COMBINED
+
+    /** The healthbase dashboard (ring + watch + anything else) from the sync folder, if it is there. */
+    public static View combined(final Context c) {
+        LinearLayout root = Ui.vbox(c);
+        String page = app.openring.data.AutoExport.dashboard(c);
+        if (page == null) {
+            LinearLayout card = Ui.card(c);
+            card.addView(Ui.caption(c, "Combined dashboard"));
+            card.addView(Ui.body(c, "Shows the dashboard.html that healthbase builds from this ring and your other devices."));
+            card.addView(Ui.gap(c, 6));
+            card.addView(Ui.body(c, app.openring.data.Prefs.of(c).syncDir() == null
+                ? "Choose a sync folder in Settings. The app writes its exports there after each sync; healthbase on your computer reads them and writes dashboard.html back."
+                : "No dashboard.html in the sync folder yet. Run healthbase on your computer and let the folder sync."));
+            root.addView(card);
+            return root;
+        }
+        android.webkit.WebView web = new android.webkit.WebView(c);
+        android.webkit.WebSettings ws = web.getSettings();
+        ws.setJavaScriptEnabled(true);          // the page's hover and dark mode script; the app has no internet permission
+        ws.setAllowFileAccess(false);
+        ws.setAllowContentAccess(false);
+        ws.setBlockNetworkLoads(true);
+        web.setBackgroundColor(0);
+        web.loadDataWithBaseURL(null, page, "text/html", "utf-8", null);
+        root.addView(web, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        return root;
+    }
 
     // ======================================================================== TODAY
 

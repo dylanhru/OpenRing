@@ -310,6 +310,10 @@ public final class RingManager {
                 try {
                     prefs.setLastSyncError(res.ok ? null : res.message);
                     if (res.ok) prefs.setLastSync(System.currentTimeMillis() / 1000);
+                    if (res.ok) {
+                        String err = app.openring.data.AutoExport.run(ctx);
+                        if (err != null) log(err);
+                    }
                 } finally {
                     // the download is over and the link closed: free the ring for Live, games and
                     // Settings while the screen log is read and the nights are analysed (issue #21)

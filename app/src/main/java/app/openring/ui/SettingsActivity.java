@@ -42,7 +42,7 @@ import app.openring.sync.SyncService;
 
 /** Ring, profile, key, data and advanced settings. */
 public final class SettingsActivity extends Activity implements RingManager.Listener {
-    private static final int EXPORT_CSV = 11, EXPORT_DB = 12, BACKUP_KEY = 13, BACKUP_FULL = 14;
+    private static final int EXPORT_CSV = 11, EXPORT_DB = 12, BACKUP_KEY = 13, BACKUP_FULL = 14, SYNC_DIR = 15;
     private ScrollView scroll;
     private LinearLayout chips;
     private LinearLayout root;
@@ -348,6 +348,39 @@ public final class SettingsActivity extends Activity implements RingManager.List
             }
         });
         root.addView(data);
+
+        // ---- sync folder (healthbase) ----
+        LinearLayout sync = Ui.card(this);
+        sync.addView(Ui.caption(this, "Sync folder"));
+        sync.addView(Ui.body(this, "After every ring sync the daily CSV and the database are written into this folder. Share it with your computer (for example with Syncthing) and put the dashboard.html it builds back in the same folder: the Combined tab shows it."));
+        final String dir = Prefs.of(this).syncDir();
+        sync.addView(Ui.text(this, dir == null ? "No folder chosen" : "Folder: " + android.net.Uri.parse(dir).getLastPathSegment(), 12, Ui.TEXT_3, Ui.REGULAR));
+        sync.addView(Ui.gap(this, 6));
+        pair(sync, "Choose folder", Ui.TEXT_2, new Runnable() {
+            @Override
+            public void run() {
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                startActivityForResult(i, SYNC_DIR);
+            }
+        }, "Export now", Ui.TEXT_2, new Runnable() {
+            @Override
+            public void run() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final String err = app.openring.data.AutoExport.run(SettingsActivity.this);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                android.widget.Toast.makeText(SettingsActivity.this, err == null ? (Prefs.of(SettingsActivity.this).syncDir() == null ? "Choose a folder first" : "Exported to the sync folder") : err, android.widget.Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }).start();
+            }
+        });
+        root.addView(sync);
 
         // ---- help ----
         LinearLayout help = Ui.card(this);
@@ -912,6 +945,12 @@ public final class SettingsActivity extends Activity implements RingManager.List
     protected void onActivityResult(final int code, int result, Intent data) {
         if (result != RESULT_OK || data == null || data.getData() == null) return;
         final Uri uri = data.getData();
+        if (code == SYNC_DIR) {
+            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            Prefs.of(this).setSyncDir(uri.toString());
+            recreate();
+            return;
+        }
         final boolean backup = code == BACKUP_KEY || code == BACKUP_FULL;
         new AsyncTask<Void, Void, String>() {
             @Override

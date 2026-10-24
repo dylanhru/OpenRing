@@ -117,6 +117,9 @@ public final class Prefs {
     public long lastAttempt() { return sp.getLong("last_attempt", 0); }
     public void setLastAttempt(long t) { sp.edit().putLong("last_attempt", t).apply(); }
     public void setLastSync(long t) { sp.edit().putLong("last_sync", t).apply(); }
+    /** Tree URI of the folder that gets the exports after each sync (Settings, Sync folder), or null. */
+    public String syncDir() { return sp.getString("sync_dir", null); }
+    public void setSyncDir(String uri) { sp.edit().putString("sync_dir", uri).apply(); }
     public String lastSyncError() { return sp.getString("last_sync_error", null); }
     public void setLastSyncError(String e) { sp.edit().putString("last_sync_error", e).apply(); }
     public boolean backgroundSync() { return sp.getBoolean("bg_sync", true); }
